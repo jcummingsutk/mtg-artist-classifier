@@ -1,0 +1,7 @@
+stages:
+  get_images:
+    cmd: poetry run python mtg_artist_classifier/data/download_card_images.py
+    deps:
+      - mtg_artist_classifier/data/download_card_images.py
+    outs: 
+      - data/card_images/

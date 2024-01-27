@@ -4,10 +4,13 @@ version = "0.0.1"
 description = ""
 authors = ["John Cummings <jcummingsutk@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "package_placeholder" }]
+packages = [{ include = "mtg_artist_classifier" }]
 
 [tool.poetry.dependencies]
-python = ">=3.9, <3.12"
+python = ">=3.10, <3.12"
+dvc = "^3.42.0"
+mtgsdk = "^1.3.1"
+pyhumps = "^3.8.0"
 
 
 [tool.poetry.group.dev.dependencies]

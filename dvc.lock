@@ -1,0 +1,15 @@
+schema: '2.0'
+stages:
+  get_images:
+    cmd: poetry run python mtg_artist_classifier/data/download_card_images.py
+    deps:
+    - path: mtg_artist_classifier/data/download_card_images.py
+      hash: md5
+      md5: 05aee469d59122a7d50e483ef2519f6e
+      size: 942
+    outs:
+    - path: data/card_images/
+      hash: md5
+      md5: 188bb7037a28aab91f2e7a3811ab0fbc.dir
+      size: 34484824
+      nfiles: 343

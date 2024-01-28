@@ -13,3 +13,26 @@ stages:
       md5: 188bb7037a28aab91f2e7a3811ab0fbc.dir
       size: 34484824
       nfiles: 343
+  train_test_split:
+    cmd: poetry run python mtg_artist_classifier/data/train_test_split.py
+    deps:
+    - path: data/card_images/
+      hash: md5
+      md5: 188bb7037a28aab91f2e7a3811ab0fbc.dir
+      size: 34484824
+      nfiles: 343
+    - path: mtg_artist_classifier/data/train_test_split.py
+      hash: md5
+      md5: ec14084dc83cdb0ea162db93d52cf0e3
+      size: 5640
+    params:
+      dvc_params.yaml:
+        eval_fraction: 0.1
+        test_fraction: 0.1
+        train_fraction: 0.8
+    outs:
+    - path: data/model_training_and_eval
+      hash: md5
+      md5: fb32b24214b839a9c877f86625bb3313.dir
+      size: 34093871
+      nfiles: 339

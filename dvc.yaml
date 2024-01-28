@@ -5,3 +5,15 @@ stages:
       - mtg_artist_classifier/data/download_card_images.py
     outs: 
       - data/card_images/
+  train_test_split:
+    cmd: poetry run python mtg_artist_classifier/data/train_test_split.py
+    deps:
+      - mtg_artist_classifier/data/train_test_split.py
+      - data/card_images/
+    params:
+      - dvc_params.yaml:
+        - train_fraction
+        - eval_fraction
+        - test_fraction
+    outs:
+      - data/model_training_and_eval

@@ -1,5 +1,6 @@
 import os
 
+import yaml
 from mtgsdk import Card
 
 from mtg_artist_classifier.data.utils import download_images, get_cards_for_artist
@@ -27,7 +28,10 @@ def download_unique_cards(artist: str):
 
 
 def main():
-    artists = ["Terese Nielsen", "Rebecca Guay"]
+    with open("dvc_params.yaml", "r") as params_file:
+        params = yaml.safe_load(params_file)
+        artists = params["artists"]
+        print(artists)
     for artist in artists:
         download_unique_cards(artist)
 

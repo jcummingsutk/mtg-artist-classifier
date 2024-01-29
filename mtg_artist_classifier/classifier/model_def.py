@@ -1,6 +1,4 @@
 import torch.nn as nn
-import torch.nn.functional as f
-import torchvision
 
 
 class ArtistClassifier(nn.Module):

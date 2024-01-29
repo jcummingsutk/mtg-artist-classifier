@@ -5,22 +5,22 @@ stages:
     deps:
     - path: mtg_artist_classifier/data/download_card_images.py
       hash: md5
-      md5: 05aee469d59122a7d50e483ef2519f6e
-      size: 942
+      md5: 421269593ba12162dbf4fbf9d860a12d
+      size: 1063
     outs:
     - path: data/card_images/
       hash: md5
-      md5: 188bb7037a28aab91f2e7a3811ab0fbc.dir
-      size: 34484824
-      nfiles: 343
+      md5: f58a057cf1052019180779d82c3acc29.dir
+      size: 51623190
+      nfiles: 555
   train_test_split:
     cmd: poetry run python mtg_artist_classifier/data/train_test_split.py
     deps:
     - path: data/card_images/
       hash: md5
-      md5: 188bb7037a28aab91f2e7a3811ab0fbc.dir
-      size: 34484824
-      nfiles: 343
+      md5: f58a057cf1052019180779d82c3acc29.dir
+      size: 51623190
+      nfiles: 555
     - path: mtg_artist_classifier/data/train_test_split.py
       hash: md5
       md5: ec14084dc83cdb0ea162db93d52cf0e3
@@ -33,6 +33,6 @@ stages:
     outs:
     - path: data/model_training_and_eval
       hash: md5
-      md5: fb32b24214b839a9c877f86625bb3313.dir
-      size: 34093871
-      nfiles: 339
+      md5: 19fdf22ef958646e94cfc40b782f86bc.dir
+      size: 51066060
+      nfiles: 549

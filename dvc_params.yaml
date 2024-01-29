@@ -1,3 +1,7 @@
+artists:
+  - Terese Nielsen
+  - Rebecca Guay
+  - John Avon
 train_fraction: .8
 eval_fraction: .1
 test_fraction: .1

@@ -3,6 +3,9 @@ stages:
     cmd: poetry run python mtg_artist_classifier/data/download_card_images.py
     deps:
       - mtg_artist_classifier/data/download_card_images.py
+    params:
+      - dvc_params.yaml:
+        - artists
     outs: 
       - data/card_images/
   train_test_split:
@@ -16,3 +19,12 @@ stages:
         - val_fraction
     outs:
       - data/model_training_and_eval
+  create_model_config:
+    cmd: poetry run python mtg_artist_classifier/data/create_model_config.py
+    deps:
+      - mtg_artist_classifier/data/create_model_config.py
+    params:
+      - dvc_params.yaml:
+        - artists
+    outs:
+      - mtg_artist_classifier/classifier/model_params.yaml

@@ -17,13 +17,3 @@ class FullyConnectedLayer(nn.Module):
 
     def forward(self, x):
         return self.fully_connected(x)
-
-
-def build_classifier(base_model, num_classes: int):
-    fully_connected = FullyConnectedLayer(base_model, num_classes)
-    for param in base_model.parameters():
-        param.requires_grad = False
-    fully_connected = FullyConnectedLayer(base_model, num_classes)
-    base_model.fc = fully_connected
-
-    return base_model

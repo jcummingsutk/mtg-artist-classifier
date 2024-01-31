@@ -10,5 +10,3 @@ IMAGE_TRANSFORMS = transforms.Compose(
         transforms.Normalize(MEANS, STDS),
     ]
 )
-
-DATA_LOADER_BATCH_SIZE = 4

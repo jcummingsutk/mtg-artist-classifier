@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 local_notebooks
+environment_variable_config_secrets.env

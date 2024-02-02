@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 
-class FullyConnectedLayer(nn.Module):
+class CustomFullyConnectedLayer(nn.Module):
     def __init__(self, base_model, num_classes):
         super().__init__()
         num_ftrs = base_model.fc.in_features

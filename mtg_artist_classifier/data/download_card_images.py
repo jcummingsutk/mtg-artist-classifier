@@ -55,7 +55,8 @@ def download_card_images(cards: list[Card], folder_dir: str):
 
 
 def get_image_uri(input_multiverse_id: str):
-    """Get the uris of image (without card border) in the input_multiverse_id from the scryfall api
+    """Get the uris of image (without card border) in the input_multiverse_id from the
+    scryfall api
 
     Args:
         input_multiverse_id (str): id for mtg card to get url for

@@ -5,8 +5,8 @@ stages:
     deps:
     - path: mtg_artist_classifier/data/download_card_images.py
       hash: md5
-      md5: e43011b9b65fc32afd22a290bb36f7ce
-      size: 3698
+      md5: f7784a3cf20d4d57e9678e72eb1c20ca
+      size: 3702
     params:
       dvc_params.yaml:
         artists:
@@ -32,8 +32,8 @@ stages:
       nfiles: 900
     - path: mtg_artist_classifier/data/train_test_split.py
       hash: md5
-      md5: 288e917bfb24634b682b86d6e9cbd383
-      size: 4393
+      md5: 565926dedb09764df06f4c986a3864cc
+      size: 6106
     params:
       dvc_params.yaml:
         train_fraction: 0.8
@@ -41,16 +41,16 @@ stages:
     outs:
     - path: data/model_training_and_eval
       hash: md5
-      md5: 70abcf71172a4dceede7bfa6e16ca26d.dir
-      size: 83548453
-      nfiles: 894
+      md5: 3669a5e75551993d1e960f1f560968b6.dir
+      size: 84113089
+      nfiles: 900
   create_model_config:
     cmd: poetry run python mtg_artist_classifier/data/create_model_config.py
     deps:
     - path: mtg_artist_classifier/data/create_model_config.py
       hash: md5
-      md5: 0fbef1e4f97ffda0b1e38d1e7a2710b3
-      size: 810
+      md5: 7fac99aa7a1e390453e3c94a6566e587
+      size: 944
     params:
       dvc_params.yaml:
         artists:

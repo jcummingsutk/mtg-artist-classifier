@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+from typing import Union
 
 import requests
 from mtgsdk import Card
@@ -20,8 +21,9 @@ def get_cards_for_artist(artist: str) -> list[Card]:
     return cards
 
 
-def get_image_uri(input_multiverse_id: str):
-    """Get the uris of image (without card border) in the input_multiverse_id from the scryfall api
+def get_image_uri(input_multiverse_id: str) -> Union[str, None]:
+    """Get the uris of image (without card border) in the input_multiverse_id from the
+    scryfall api
 
     Args:
         input_multiverse_id (str): id for mtg card to get url for

@@ -23,6 +23,16 @@ class ArtistImageInfo:
 
 
 def get_shuffled_multiverse_ids(files: list[str]) -> list[int]:
+    """Gets a list of files of the form some_dir/some_other_dir/number.jpg,
+    shuffles the list predictably, then returns the list of the numbers, which are the
+    multiverse ids of the cards
+
+    Args:
+        files (list[str]): _description_
+
+    Returns:
+        list[int]: _description_
+    """
     basename_files = [os.path.basename(f) for f in files]
     multiverse_ids = sorted([int(file_[:-4]) for file_ in basename_files])
     seed = 42
@@ -31,6 +41,20 @@ def get_shuffled_multiverse_ids(files: list[str]) -> list[int]:
 
 
 def get_train_eval_test_indices(multiverse_ids: list[int]) -> TrainValIndices:
+    """Takes a list of multiverse ids and creates the indices for the training and
+    validation set. Example: if train_fraction is 0.8 and val_fraction is 0.2, and there
+    are 20 items, then first
+    first_train_example_idx = 0
+    last_train_example_idx = 16 later will use training_list = total_list[0:16]
+    first_val_example_idx = 16
+    last_val_example_idx = 20 later will use eval_list = total_list[16:20]
+
+    Args:
+        multiverse_ids (list[int]): _description_
+
+    Returns:
+        TrainValIndices: _description_
+    """
     if len(multiverse_ids) < 10:
         raise ValueError("Not enough indices to do a split")
 
@@ -44,7 +68,7 @@ def get_train_eval_test_indices(multiverse_ids: list[int]) -> TrainValIndices:
     num_examples = len(multiverse_ids)
     first_train_example_idx = 0
     last_train_example_idx = int(train_fraction * num_examples)
-    first_val_example_idx = last_train_example_idx + 1
+    first_val_example_idx = last_train_example_idx
     last_val_example_idx = int((train_fraction + val_fraction) * num_examples)
     train_eval_test_indices = TrainValIndices(
         first_train_example_idx=first_train_example_idx,
@@ -56,6 +80,16 @@ def get_train_eval_test_indices(multiverse_ids: list[int]) -> TrainValIndices:
 
 
 def create_train_val_split(artist_image_info: ArtistImageInfo, model_data_dir: str):
+    """For a given artist, gets all the jpgs of their art in the local directory,
+    creates training and validation directories in the model_data_dir, then copies
+    the appropriate fraction of images into the training and validation directory
+
+    Args:
+        artist_image_info (ArtistImageInfo): Artist name and where their jpgs are
+        model_data_dir (str): Where the artist's training and validation directories
+        will be held
+    """
+    # Get the list of jpgs, shuffle, decide which will be training and validation
     files = glob.glob(os.path.join(artist_image_info.image_directory, "*.jpg"))
     shuffled_multiverse_ids = get_shuffled_multiverse_ids(files)
     idxs = get_train_eval_test_indices(shuffled_multiverse_ids)
@@ -66,6 +100,8 @@ def create_train_val_split(artist_image_info: ArtistImageInfo, model_data_dir: s
         idxs.first_val_example_idx : idxs.last_val_example_idx
     ]
 
+    # Create filenames that need to be copied (source) and where they will be copied to
+    # (destination) for both training and validation sets
     source_train_filenames = [
         os.path.join(
             artist_image_info.image_directory, str(train_multiverse_id) + ".jpg"
@@ -96,6 +132,7 @@ def create_train_val_split(artist_image_info: ArtistImageInfo, model_data_dir: s
         for val_multiverse_id in val_multiverse_ids
     ]
 
+    # Copy the files
     os.makedirs(
         os.path.join(model_data_dir, "train_images", artist_image_info.artist_name),
         exist_ok=True,
@@ -112,6 +149,9 @@ def create_train_val_split(artist_image_info: ArtistImageInfo, model_data_dir: s
 
 
 if __name__ == "__main__":
+    # For each artist that is contained in the card_images file,
+    # this script creates training and validation images in the
+    # data/model_training_and_eval folder
     root_image_dir = os.path.join("data", "card_images")
     root_model_data_dir = os.path.join("data", "model_training_and_eval")
     artist_dirs = os.listdir(root_image_dir)

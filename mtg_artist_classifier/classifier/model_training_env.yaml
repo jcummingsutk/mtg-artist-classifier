@@ -1,4 +1,4 @@
-name: pytorch-simple-training
+name: mtg-classification-pytorch
 channels:
   - pytorch
   - nvidia

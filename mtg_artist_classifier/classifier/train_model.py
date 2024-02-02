@@ -46,7 +46,6 @@ def train_model(
         for epoch in range(num_epochs):
             epoch_string = f"Epoch {epoch+1}/{num_epochs}"
             print(f"{epoch_string:=^40}")
-            print("-" * 10)
 
             # We'll do something slightly different depending if we're training or validating
             for phase in ["train", "val"]:

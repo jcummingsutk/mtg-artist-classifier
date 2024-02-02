@@ -1,0 +1,9 @@
+artists:
+  - Noah Bradley
+  - Mark Poole
+  - Terese Nielsen
+  - Rebecca Guay
+  - John Avon
+  - Christopher Rush
+train_fraction: .8
+val_fraction: .2

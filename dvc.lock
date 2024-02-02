@@ -1,0 +1,67 @@
+schema: '2.0'
+stages:
+  get_images:
+    cmd: poetry run python mtg_artist_classifier/data/download_card_images.py
+    deps:
+    - path: mtg_artist_classifier/data/download_card_images.py
+      hash: md5
+      md5: f7784a3cf20d4d57e9678e72eb1c20ca
+      size: 3702
+    params:
+      dvc_params.yaml:
+        artists:
+        - Noah Bradley
+        - Mark Poole
+        - Terese Nielsen
+        - Rebecca Guay
+        - John Avon
+        - Christopher Rush
+    outs:
+    - path: data/card_images/
+      hash: md5
+      md5: e79d324cdc611a6319bf93e0e25d5bba.dir
+      size: 84113089
+      nfiles: 900
+  train_test_split:
+    cmd: poetry run python mtg_artist_classifier/data/train_test_split.py
+    deps:
+    - path: data/card_images/
+      hash: md5
+      md5: e79d324cdc611a6319bf93e0e25d5bba.dir
+      size: 84113089
+      nfiles: 900
+    - path: mtg_artist_classifier/data/train_test_split.py
+      hash: md5
+      md5: 565926dedb09764df06f4c986a3864cc
+      size: 6106
+    params:
+      dvc_params.yaml:
+        train_fraction: 0.8
+        val_fraction: 0.2
+    outs:
+    - path: data/model_training_and_eval
+      hash: md5
+      md5: 3669a5e75551993d1e960f1f560968b6.dir
+      size: 84113089
+      nfiles: 900
+  create_model_config:
+    cmd: poetry run python mtg_artist_classifier/data/create_model_config.py
+    deps:
+    - path: mtg_artist_classifier/data/create_model_config.py
+      hash: md5
+      md5: 7fac99aa7a1e390453e3c94a6566e587
+      size: 944
+    params:
+      dvc_params.yaml:
+        artists:
+        - Noah Bradley
+        - Mark Poole
+        - Terese Nielsen
+        - Rebecca Guay
+        - John Avon
+        - Christopher Rush
+    outs:
+    - path: mtg_artist_classifier/classifier/model_params.yaml
+      hash: md5
+      md5: c31b7ce56b3c3d4f916e70cb4cc9f525
+      size: 15

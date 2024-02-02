@@ -6,6 +6,7 @@
     "flake8.path": [
         "/home/jcummings/.local/bin/flake8"
     ],
+    "jupyter.notebookFileRoot": "${workspaceFolder}",
     "isort.path": [
         "/home/jcummings/.local/bin/isort"
     ],
@@ -19,7 +20,10 @@
         "editor.defaultFormatter": "ms-python.black-formatter",
         "editor.formatOnSave": true,
         "editor.codeActionsOnSave": {
-            "source.organizeImports": true
+            "source.organizeImports": "explicit"
         }
     },
+    "editor.rulers": [
+        88
+    ]
 }

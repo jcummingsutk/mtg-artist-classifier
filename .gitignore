@@ -163,3 +163,6 @@ local_notebooks
 environment_variable_config_secrets.env
 mlruns
 .venv_model_deployment
+local_docker
+azure_config_secrets.json
+old

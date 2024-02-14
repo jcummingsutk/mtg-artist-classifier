@@ -1,18 +1,29 @@
 import argparse
+import glob
+import json
 import os
 import time
 from tempfile import TemporaryDirectory
 
 import mlflow
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import yaml
+from azure.ai.ml import MLClient
+from azure.identity import EnvironmentCredential
 from custom_fc_layer import CustomFullyConnectedLayer
 from prepare_data_constants import IMAGE_TRANSFORMS
 from torch.optim import lr_scheduler
 from torchvision import models
 from torchvision.datasets import ImageFolder
+
+
+def create_artist_json(dataset: ImageFolder, artist_mapping_file: str):
+    artist_mapping = {val: key for key, val in dataset.class_to_idx.items()}
+    with open(artist_mapping_file, "w") as fp:
+        json.dump(artist_mapping, fp)
 
 
 def train_model(
@@ -42,6 +53,7 @@ def train_model(
 
         torch.save(model.state_dict(), best_model_params_path)
         best_acc = 0.0
+        best_loss = np.inf
 
         for epoch in range(num_epochs):
             epoch_string = f"Epoch {epoch+1}/{num_epochs}"
@@ -86,6 +98,7 @@ def train_model(
                 # Copy the model if it is the best
                 if phase == "val" and epoch_acc > best_acc:
                     best_acc = epoch_acc
+                    best_loss = epoch_loss
                     torch.save(model.state_dict(), best_model_params_path)
 
                 # Step the scheduler to adjust the learning rate if the validation loss
@@ -101,7 +114,7 @@ def train_model(
         )
         print(f"Best val Acc: {epoch_acc*100:.2f}%")
         mlflow.log_metric("accuracy", best_acc)
-        mlflow.log_metric("loss", total_loss)
+        mlflow.log_metric("loss", best_loss)
 
         # load best model weights
         model.load_state_dict(torch.load(best_model_params_path))
@@ -143,6 +156,12 @@ def main(
         transform=IMAGE_TRANSFORMS,
     )
     datasets: dict[str, ImageFolder] = {"train": train_dataset, "val": val_dataset}
+
+    this_files_folder = os.path.dirname(os.path.realpath(__file__))
+
+    artist_mapping_file = os.path.join(this_files_folder, "artist_mapping.json")
+    print(artist_mapping_file)
+    create_artist_json(train_dataset, artist_mapping_file)
     model = models.resnet18(weights="IMAGENET1K_V1")
 
     # Freeze the weights of the base model, create custom fully connected layer
@@ -172,14 +191,18 @@ def main(
         batch_size=batch_size,
         num_epochs=num_epochs,
     )
+    torch.save(model.state_dict(), "./saved_model")
 
     # log the model
     this_files_dir = os.path.dirname(os.path.realpath(__file__))
-    mlflow.pytorch.log_model(
-        model,
-        "model",
-        code_paths=[os.path.join(this_files_dir, "prepare_data_constants.py")],
-    )
+    code_paths = [
+        file_
+        for file_ in glob.glob(os.path.join(this_files_dir, "*"))
+        if "secret" not in file_
+    ]
+    for file_ in glob.glob(os.path.join(this_files_dir, "*")):
+        print(file_)
+    mlflow.pytorch.log_model(model, "model", code_paths=code_paths)
 
 
 if __name__ == "__main__":
@@ -188,13 +211,44 @@ if __name__ == "__main__":
     parser.add_argument("--val-data-folder")
     parser.add_argument("--batch-size", type=int)
     parser.add_argument("--num-epochs", type=int)
+
+    # Optional azure info
+    parser.add_argument("--remote-tracking", type=bool, default=False)
     args = parser.parse_args()
 
     train_data_folder = args.train_data_folder
     val_data_folder = args.val_data_folder
     batch_size = args.batch_size
     num_epochs = args.num_epochs
+    remote_tracking = args.remote_tracking
 
+    if remote_tracking:
+        this_files_dir = os.path.dirname(os.path.realpath(__file__))
+        azure_config_file = os.path.join(this_files_dir, "azure_config.json")
+        azure_secrets_config_file = os.path.join(
+            this_files_dir, "azure_config_secrets.json"
+        )
+        with open(azure_config_file, "r") as f:
+            azure_config_dict = json.load(fp=f)
+        with open(azure_secrets_config_file, "r") as f:
+            azure_secrets_config_dict = json.load(fp=f)
+        os.environ["AZURE_TENANT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_TENANT_ID"]
+        os.environ["AZURE_CLIENT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_CLIENT_ID"]
+        os.environ["AZURE_CLIENT_SECRET"] = azure_secrets_config_dict[
+            "SERVICE_PRINCIPAL_CLIENT_SECRET"
+        ]
+        environment_credential = EnvironmentCredential()
+
+        ml_client = MLClient(
+            subscription_id=azure_config_dict["AZURE_SUBSCRIPTION_ID"],
+            resource_group_name=azure_config_dict["RESOURCE_GROUP_NAME"],
+            credential=environment_credential,
+            workspace_name=azure_config_dict["WORKSPACE_NAME"],
+        )
+        mlflow_tracking_id = ml_client.workspaces.get(
+            ml_client.workspace_name
+        ).mlflow_tracking_uri
+        mlflow.set_tracking_uri(mlflow_tracking_id)
     mlflow.set_experiment("mtg-artist-classification")
     with mlflow.start_run():
         main(train_data_folder, val_data_folder, batch_size, num_epochs)

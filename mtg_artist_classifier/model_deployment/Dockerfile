@@ -16,5 +16,4 @@ RUN pip install flask
 
 COPY . .
 
-# CMD [ "python", "-m", "flask", "--app", "model/code/app", "run", "--host=0.0.0.0" ]
 ENTRYPOINT ["python", "model/code/app.py"]

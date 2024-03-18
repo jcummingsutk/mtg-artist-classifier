@@ -27,6 +27,22 @@ def write_requirements_file(requirements_as_list: list[str], output_file: str):
             output_file.write(line)
 
 
+def modify_requirements_file(
+    requirements_file: str,
+    torch_output_requirements_filename: str,
+    non_torch_output_requirements_filename: str,
+):
+    requirements_as_list = get_requirmements_as_list(requirements_file)
+
+    non_torch_requirements, torch_requirements = separate_torch_requirements(
+        requirements_as_list
+    )
+    write_requirements_file(torch_requirements, torch_output_requirements_filename)
+    write_requirements_file(
+        non_torch_requirements, non_torch_output_requirements_filename
+    )
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--requirements-file", type=str)
@@ -36,11 +52,3 @@ if __name__ == "__main__":
     requirements_file = args.requirements_file
     torch_output_requirements_filename = args.torch_output_requirements_filename
     non_torch_output_requirements_filename = args.non_torch_output_requirements_filename
-    requirements_as_list = get_requirmements_as_list(requirements_file)
-    non_torch_requirements, torch_requirements = separate_torch_requirements(
-        requirements_as_list
-    )
-    write_requirements_file(torch_requirements, torch_output_requirements_filename)
-    write_requirements_file(
-        non_torch_requirements, non_torch_output_requirements_filename
-    )

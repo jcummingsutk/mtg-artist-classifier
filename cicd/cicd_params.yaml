@@ -1,0 +1,2 @@
+download_params:
+  model_download_location: downloaded_model/

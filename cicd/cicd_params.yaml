@@ -1,2 +1,8 @@
+upload_script_params:
+  training_environment_name: mtg-artist-classification-training-gpu
+  training_compute_name: GPU-CLUSTER
+  experiment_name: mtg-artist-classification
+  training_data_folder: azureml://subscriptions/94f3bfe4-d65b-4af2-959a-f4cc3f4fef6a/resourcegroups/john-cummings/workspaces/mtg-artist-classifier-dev/datastores/train_validaiton_images/paths/data/model_training_and_eval/train_images/
+  validation_data_folder: azureml://subscriptions/94f3bfe4-d65b-4af2-959a-f4cc3f4fef6a/resourcegroups/john-cummings/workspaces/mtg-artist-classifier-dev/datastores/train_validaiton_images/paths/data/model_training_and_eval/val_images/
 download_params:
   model_download_location: downloaded_model/

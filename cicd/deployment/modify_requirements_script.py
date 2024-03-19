@@ -27,6 +27,15 @@ def write_requirements_file(requirements_as_list: list[str], output_file: str):
             output_file.write(line)
 
 
+def append_list_to_requirements(
+    requirements_file: str, requirements_to_append_as_list: list[str]
+):
+    with open(requirements_file, "a") as f:
+        for line in requirements_to_append_as_list:
+            f.write("\n")
+            f.write(line)
+
+
 def modify_requirements_file(
     requirements_file: str,
     torch_output_requirements_filename: str,

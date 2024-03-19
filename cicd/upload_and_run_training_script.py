@@ -1,5 +1,4 @@
 import argparse
-import json
 import os
 
 import yaml
@@ -11,33 +10,36 @@ from azureml.core.environment import Environment
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--azure-config-file", type=str)
-    parser.add_argument("--azure-config-secrets-file", type=str)
-    parser.add_argument("--cicd-params-file", type=str)
+    parser.add_argument("--config-file", type=str)
+    parser.add_argument("--config-secrets-file", type=str)
     args = parser.parse_args()
-    azure_config_file = args.azure_config_file
-    azure_config_secrets_file = args.azure_config_secrets_file
-    cicd_params_file = args.cicd_params_file
+    config_file = args.config_file
+    config_secrets_file = args.config_secrets_file
 
-    with open(azure_config_file, "r") as f:
-        azure_config_dict = json.load(fp=f)
+    with open(config_file, "r") as f:
+        config_dict = yaml.safe_load(f)
+    azure_config_dict = config_dict["azure_ml"]["dev"]
+    upload_training_script_params = config_dict["upload_training_script_params"]
+    print(azure_config_dict)
 
-    os.environ["AZURE_TENANT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_TENANT_ID"]
-    os.environ["AZURE_CLIENT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_CLIENT_ID"]
-    os.environ["AZURE_ML_SUBSCRIPTION_ID"] = azure_config_dict["AZURE_SUBSCRIPTION_ID"]
-    os.environ["DEV_AZURE_ML_WORKSPACE_NAME"] = azure_config_dict["DEV_WORKSPACE_NAME"]
+    os.environ["AZURE_TENANT_ID"] = azure_config_dict["service_principal_tenant_id"]
+    os.environ["AZURE_CLIENT_ID"] = azure_config_dict["service_principal_client_id"]
+    os.environ["AZURE_ML_SUBSCRIPTION_ID"] = azure_config_dict["azure_subscription_id"]
+    os.environ["DEV_AZURE_ML_WORKSPACE_NAME"] = azure_config_dict["workspace_name"]
     os.environ["DEV_AZURE_ML_RESOURCE_GROUP_NAME"] = azure_config_dict[
-        "RESOURCE_GROUP_NAME"
+        "resource_group_name"
     ]
 
-    if azure_config_secrets_file is not None:
+    if config_secrets_file is not None:
         # in the pipeline the secrets will be saved
         # if run locally, argument azure-config-secrets-file must be provided
-        with open(azure_config_secrets_file, "r") as f:
-            azure_secrets_config_dict = json.load(fp=f)
+        with open(config_secrets_file, "r") as f:
+            secrets_config_dict = yaml.safe_load(f)
+        azure_secrets_config_dict = secrets_config_dict["azure_ml"]["dev"]
         os.environ["AZURE_CLIENT_SECRET"] = azure_secrets_config_dict[
-            "SERVICE_PRINCIPAL_CLIENT_SECRET"
+            "service_principal_client_secret"
         ]
+        print(azure_secrets_config_dict)
 
     sp_auth = ServicePrincipalAuthentication(
         tenant_id=os.environ["AZURE_TENANT_ID"],
@@ -58,9 +60,6 @@ if __name__ == "__main__":
         credential=EnvironmentCredential(),
     )
 
-    with open(cicd_params_file, "r") as fp:
-        cicd_params_dict = yaml.safe_load(fp)
-    upload_training_script_params = cicd_params_dict["upload_training_script_params"]
     print(upload_training_script_params)
 
     os.environ["TRAINING_ENVIRONMENT_NAME"] = upload_training_script_params[

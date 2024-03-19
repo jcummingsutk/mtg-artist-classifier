@@ -167,3 +167,5 @@ local_docker
 azure_config_secrets.json
 old
 bash
+config_secret.yaml
+downloaded_model

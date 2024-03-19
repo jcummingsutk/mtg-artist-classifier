@@ -1,4 +1,4 @@
-upload_script_params:
+upload_training_script_params:
   training_environment_name: mtg-artist-classification-training-gpu
   training_compute_name: GPU-CLUSTER
   experiment_name: mtg-artist-classification

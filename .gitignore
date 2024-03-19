@@ -166,3 +166,4 @@ mlruns
 local_docker
 azure_config_secrets.json
 old
+bash

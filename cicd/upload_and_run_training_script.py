@@ -60,10 +60,10 @@ if __name__ == "__main__":
 
     with open(cicd_params_file, "r") as fp:
         cicd_params_dict = yaml.safe_load(fp)
-    upload_script_params = cicd_params_dict["upload_script_params"]
-    print(upload_script_params)
+    upload_training_script_params = cicd_params_dict["upload_training_script_params"]
+    print(upload_training_script_params)
 
-    os.environ["TRAINING_ENVIRONMENT_NAME"] = upload_script_params[
+    os.environ["TRAINING_ENVIRONMENT_NAME"] = upload_training_script_params[
         "training_environment_name"
     ]
 
@@ -77,15 +77,15 @@ if __name__ == "__main__":
         inputs={
             "train_data_folder": Input(
                 type="uri_folder",
-                path=upload_script_params["training_data_folder"],
+                path=upload_training_script_params["training_data_folder"],
             ),
             "val_data_folder": Input(
                 type="uri_folder",
-                path=upload_script_params["validation_data_folder"],
+                path=upload_training_script_params["validation_data_folder"],
             ),
         },
-        compute=upload_script_params["training_compute_name"],
-        experiment_name=upload_script_params["experiment_name"],
+        compute=upload_training_script_params["training_compute_name"],
+        experiment_name=upload_training_script_params["experiment_name"],
     )
 
     returned_job = ml_client.jobs.create_or_update(command_job)

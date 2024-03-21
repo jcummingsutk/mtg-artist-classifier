@@ -27,5 +27,10 @@ steps:
 - script: |
     poetry run python cicd/deployment/download_model.py --config-file config.yaml --deployment-config-file cicd/deployment/config.yaml
     ls cicd/deployment/model
+  displayName: 'Download Model'
   env:
     AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+
+- script: |
+    az acr build --resource-group john-cummings --registry jtcmtgartistrecognizerdev --image mtg-classifier-dockerized:latest cicd/deployment 
+  displayName: 'Build Image in ACR'

@@ -26,3 +26,9 @@ steps:
     pipx install poetry==1.4.2
     poetry install
   displayName: 'Install dependencies'
+
+- script: |
+    poetry run python cicd/upload_and_run_training_script.py --config-file config.yaml
+  displayName: 'Train Model'
+  env:
+    AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)

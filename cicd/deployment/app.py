@@ -5,8 +5,8 @@ import mlflow
 import numpy as np
 import torch
 from flask import Flask, jsonify, request
+from model.code.prepare_data_constants import IMAGE_TRANSFORMS
 from PIL import Image
-from prepare_data_constants import IMAGE_TRANSFORMS
 
 app = Flask(__name__)
 
@@ -39,7 +39,7 @@ def predict_unnormalized_image_as_list():
         str_prediction = str(prediction)
         return jsonify(
             {
-                "prediction": artist_mapping[str_prediction],
+                "predictedArtist": artist_mapping[str_prediction],
             }
         )
     return """
@@ -63,8 +63,8 @@ def predict_normalized_image_as_list():
     with torch.no_grad():
         prediction = int(torch.argmax(logits))
     str_prediction = str(prediction)
-    return jsonify({"prediction": artist_mapping[str_prediction]})
+    return jsonify({"predictedArtist": artist_mapping[str_prediction]})
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=80)
+    app.run()

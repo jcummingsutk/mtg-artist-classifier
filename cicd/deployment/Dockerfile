@@ -14,4 +14,6 @@ RUN pip install -r ./model/torch_requirements.txt --index-url https://download.p
 
 COPY . .
 
-ENTRYPOINT ["python", "model/code/app.py"]
+EXPOSE 50505
+
+ENTRYPOINT ["gunicorn", "app:app"]

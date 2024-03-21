@@ -2,9 +2,11 @@ trigger:
   branches:
     include:
     - main
+    exclude:
   paths:
     exclude:
       - cicd/deployment/**/*
+      - cicd/cd.yaml
 
 pool:
   vmImage: ubuntu-latest

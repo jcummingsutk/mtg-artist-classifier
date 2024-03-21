@@ -3,6 +3,8 @@ import os
 
 import yaml
 from azure.ai.ml import Input, MLClient, command
+from azure.ai.ml.constants import AssetTypes
+from azure.ai.ml.entities import Model
 from azure.identity import EnvironmentCredential
 from azureml.core import Workspace
 from azureml.core.authentication import ServicePrincipalAuthentication
@@ -94,3 +96,12 @@ if __name__ == "__main__":
 
     returned_job = ml_client.jobs.create_or_update(command_job)
     ml_client.jobs.stream(returned_job.name)
+
+    model = Model(
+        path=f"azureml://jobs/{returned_job.name}/outputs/artifacts/paths/model/",
+        name="mtg-artist-classifier",
+        description="Model from CI",
+        type=AssetTypes.MLFLOW_MODEL,
+    )
+
+    ml_client.models.create_or_update(model)

@@ -31,6 +31,9 @@ steps:
   env:
     AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
 
-- script: |
-    az acr build --resource-group john-cummings --registry jtcmtgartistrecognizerdev --image mtg-classifier-dockerized:latest cicd/deployment 
-  displayName: 'Build Image in ACR'
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Azure subscription 1(94f3bfe4-d65b-4af2-959a-f4cc3f4fef6a)'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: 'az acr build --resource-group john-cummings --registry jtcmtgartistrecognizerdev --image mtg-classifier-dockerized:latest cicd/deployment' 

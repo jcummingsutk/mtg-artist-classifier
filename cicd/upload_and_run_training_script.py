@@ -69,9 +69,14 @@ if __name__ == "__main__":
     env_version = Environment.list(ws)[os.environ["TRAINING_ENVIRONMENT_NAME"]].version
     print(f"using environment {os.environ['TRAINING_ENVIRONMENT_NAME']}:{env_version}")
 
+    num_epochs = upload_training_script_params["num_epochs"]
+    batch_size = upload_training_script_params["batch_size"]
+
+    print(f"num epochs: {num_epochs}, batch_size: {batch_size}")
+
     command_job = command(
         code=os.path.join("mtg_artist_classifier", "classifier"),
-        command="python train_model.py --train-data-folder ${{inputs.train_data_folder}} --val-data-folder ${{inputs.val_data_folder}} --batch-size 4 --num-epochs 25",
+        command=f"python train_model.py --train-data-folder ${{inputs.train_data_folder}} --val-data-folder ${{inputs.val_data_folder}} --batch-size {batch_size} --num-epochs {num_epochs}",
         environment=f"{os.environ['TRAINING_ENVIRONMENT_NAME']}:{env_version}",
         inputs={
             "train_data_folder": Input(

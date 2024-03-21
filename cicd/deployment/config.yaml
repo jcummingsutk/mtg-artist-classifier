@@ -1,3 +1,2 @@
-blue_deployment:
-  model_name: mtg-artist-classifier
-  version: 3
+model_name: mtg-artist-classifier
+version: 3

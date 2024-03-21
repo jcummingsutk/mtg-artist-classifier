@@ -34,7 +34,7 @@ def train_model(
     datasets: dict[str, ImageFolder],
     device: torch.device,
     batch_size: int,
-    num_epochs,
+    num_epochs: int,
 ):
     # Time it, create data loaders
     since = time.time()
@@ -101,8 +101,7 @@ def train_model(
                     best_loss = epoch_loss
                     torch.save(model.state_dict(), best_model_params_path)
 
-                # Step the scheduler to adjust the learning rate if the validation loss
-                # has stagnated
+                # Step the scheduler to adjust the learning rate if the validation loss has stagnated
                 if phase == "val":
                     scheduler.step(epoch_loss)
                     print(f"current learning rate: {optimizer.param_groups[0]['lr']}")

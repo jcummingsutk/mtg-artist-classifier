@@ -1,0 +1,31 @@
+trigger:
+  branches:
+    include:
+    - release/*
+
+pool:
+  vmImage: ubuntu-latest
+
+strategy:
+  matrix:
+    Python310:
+      python.version: '3.10'
+
+steps:
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install pipx
+    pipx install poetry==1.4.2
+    poetry install
+  displayName: 'Install dependencies'
+
+- script: |
+    poetry run python cicd/deployment/download_model.py --config-file config.yaml --deployment-config-file cicd/deployment/config.yaml
+    ls cicd/deployment/model
+  env:
+    AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)

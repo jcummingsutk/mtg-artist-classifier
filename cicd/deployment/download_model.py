@@ -90,32 +90,31 @@ if __name__ == "__main__":
 
     model_download_location = download_params["model_download_location"]
 
-    blue_deployment_dict = deployment_config_dict["blue_deployment"]
-    blue_model_name = blue_deployment_dict["model_name"]
-    blue_model_version = blue_deployment_dict["version"]
+    model_name = deployment_config_dict["model_name"]
+    model_version = deployment_config_dict["version"]
 
     download_model(
         ml_client,
-        blue_model_name,
-        blue_model_version,
+        model_name,
+        model_version,
         model_download_location,
     )
 
     requirements_file = os.path.join(
         model_download_location,
-        blue_model_name,
+        model_name,
         "model",
         "requirements.txt",
     )
     torch_output_requirements_filename = os.path.join(
         model_download_location,
-        blue_model_name,
+        model_name,
         "model",
         "torch_requirements.txt",
     )
     non_torch_output_requirements_filename = os.path.join(
         model_download_location,
-        blue_model_name,
+        model_name,
         "model",
         "non_torch_requirements.txt",
     )
@@ -136,6 +135,6 @@ if __name__ == "__main__":
     )
 
     copy_model_folder(
-        os.path.join(model_download_location, blue_model_name),
+        os.path.join(model_download_location, model_name),
         os.path.join("cicd", "deployment"),
     )

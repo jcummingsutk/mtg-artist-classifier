@@ -39,7 +39,7 @@ def predict_unnormalized_image_as_list():
         str_prediction = str(prediction)
         return jsonify(
             {
-                "predictedMagicArtist": artist_mapping[str_prediction],
+                "predictedArtist": artist_mapping[str_prediction],
             }
         )
     return """
@@ -63,7 +63,7 @@ def predict_normalized_image_as_list():
     with torch.no_grad():
         prediction = int(torch.argmax(logits))
     str_prediction = str(prediction)
-    return jsonify({"predictedMagicArtist": artist_mapping[str_prediction]})
+    return jsonify({"predictedArtist": artist_mapping[str_prediction]})
 
 
 if __name__ == "__main__":

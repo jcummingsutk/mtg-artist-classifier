@@ -29,6 +29,10 @@ steps:
   displayName: 'Install dependencies'
 
 - script: |
+    poetry run pytest
+  displayName: 'pytest'
+
+- script: |
     poetry run python cicd/upload_and_run_training_script.py --config-file config.yaml
   displayName: 'Train Model'
   env:

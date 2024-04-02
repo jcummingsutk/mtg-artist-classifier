@@ -10,20 +10,14 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import yaml
 from azure.ai.ml import MLClient
 from azure.identity import EnvironmentCredential
+from config_utils import create_artist_json, get_num_classes
 from custom_fc_layer import CustomFullyConnectedLayer
 from prepare_data_constants import IMAGE_TRANSFORMS
 from torch.optim import lr_scheduler
 from torchvision import models
 from torchvision.datasets import ImageFolder
-
-
-def create_artist_json(dataset: ImageFolder, artist_mapping_file: str):
-    artist_mapping = {val: key for key, val in dataset.class_to_idx.items()}
-    with open(artist_mapping_file, "w") as fp:
-        json.dump(artist_mapping, fp)
 
 
 def train_model(
@@ -120,23 +114,6 @@ def train_model(
     return model
 
 
-def get_num_classes() -> int:
-    """When the data pipeline runs and gets all of the card images, the last
-    step outputs the number of artists to classify to model_params. This function
-    retrieves that for the purposes of building the classifier
-
-    Returns:
-        int: The number of artists to classify
-    """
-    this_files_folder = os.path.dirname(os.path.realpath(__file__))
-    model_params_fp = os.path.join(this_files_folder, "model_params.yaml")
-    with open(model_params_fp, "r") as fp:
-        params_dict = yaml.safe_load(fp)
-    num_classes = params_dict["num_artists"]
-
-    return int(num_classes)
-
-
 def main(
     train_data_folder: str, val_data_folder: str, batch_size: int, num_epochs: int
 ):
@@ -164,7 +141,8 @@ def main(
     model = models.resnet18(weights="IMAGENET1K_V1")
 
     # Freeze the weights of the base model, create custom fully connected layer
-    num_classes = get_num_classes()
+    model_params_fp = os.path.join(this_files_folder, "model_params.yaml")
+    num_classes = get_num_classes(model_params_fp)
     for param in model.parameters():
         param.requires_grad = False
     fully_connected = CustomFullyConnectedLayer(model, num_classes)

@@ -4,6 +4,8 @@ from typing import Any
 
 import yaml
 
+test_trigger = True
+
 
 def load_azure_config(azure_config_file: str, azure_config_secrets_file: str = None):
     with open(azure_config_file, "r") as f:

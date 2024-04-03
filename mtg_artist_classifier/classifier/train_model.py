@@ -20,6 +20,66 @@ from torchvision import models
 from torchvision.datasets import ImageFolder
 
 
+def take_train_step(
+    device: torch.device,
+    dataloader: torch.utils.data.DataLoader,
+    optimizer: torch.optim.Optimizer,
+    model: torch.nn.Module,
+    loss_function: torch.nn.Module,
+) -> tuple[float, float]:
+    total_loss = 0.0
+    total_correct_predictions = 0
+    # Iterate over data.
+    for inputs, labels in dataloader:
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        # zero the parameter gradients and optimize
+        optimizer.zero_grad()
+
+        with torch.set_grad_enabled(True):
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+            loss = loss_function(outputs, labels)
+
+            loss.backward()
+            optimizer.step()
+
+        # Track loss and accuracy for this batch
+        total_loss += loss.item()
+        total_correct_predictions += torch.sum(preds == labels.data)
+    return total_loss, total_correct_predictions
+
+
+def take_eval_step(
+    device: torch.device,
+    dataloader: torch.utils.data.DataLoader,
+    optimizer: torch.optim.Optimizer,
+    model: torch.nn.Module,
+    loss_function: torch.nn.Module,
+) -> tuple[float, float]:
+    total_loss = 0.0
+    total_correct_predictions = 0
+
+    # Iterate over data.
+    for inputs, labels in dataloader:
+        inputs = inputs.to(device)
+        labels = labels.to(device)
+
+        # zero the parameter gradients and optimize
+        optimizer.zero_grad()
+
+        with torch.set_grad_enabled(False):
+            outputs = model(inputs)
+            _, preds = torch.max(outputs, 1)
+            loss = loss_function(outputs, labels)
+
+        # Track loss and accuracy for this batch
+        total_loss += loss.item()
+        total_correct_predictions += torch.sum(preds == labels.data)
+    return total_loss, total_correct_predictions
+
+
 def train_model(
     model,
     loss_function,
@@ -57,32 +117,22 @@ def train_model(
             for phase in ["train", "val"]:
                 if phase == "train":
                     model.train()
+                    total_loss, total_correct_predictions = take_train_step(
+                        device,
+                        dataloaders["train"],
+                        optimizer,
+                        model,
+                        loss_function,
+                    )
                 else:
                     model.eval()
-
-                total_loss = 0.0
-                total_correct_predictions = 0
-
-                # Iterate over data.
-                for inputs, labels in dataloaders[phase]:
-                    inputs = inputs.to(device)
-                    labels = labels.to(device)
-
-                    # zero the parameter gradients and optimize
-                    optimizer.zero_grad()
-
-                    with torch.set_grad_enabled(phase == "train"):
-                        outputs = model(inputs)
-                        _, preds = torch.max(outputs, 1)
-                        loss = loss_function(outputs, labels)
-
-                        if phase == "train":
-                            loss.backward()
-                            optimizer.step()
-
-                    # Track loss and accuracy for this batch
-                    total_loss += loss.item()
-                    total_correct_predictions += torch.sum(preds == labels.data)
+                    total_loss, total_correct_predictions = take_eval_step(
+                        device,
+                        dataloaders["val"],
+                        optimizer,
+                        model,
+                        loss_function,
+                    )
 
                 epoch_loss = total_loss / dataset_sizes[phase]
                 epoch_acc = total_correct_predictions.double() / dataset_sizes[phase]
@@ -136,7 +186,6 @@ def main(
     this_files_folder = os.path.dirname(os.path.realpath(__file__))
 
     artist_mapping_file = os.path.join(this_files_folder, "artist_mapping.json")
-    print(artist_mapping_file)
     create_artist_json(train_dataset, artist_mapping_file)
     model = models.resnet18(weights="IMAGENET1K_V1")
 
@@ -182,6 +231,36 @@ def main(
     mlflow.pytorch.log_model(model, "model", code_paths=code_paths)
 
 
+def configure_remote_tracking():
+    """Sets up remote tracking environment variables, remote tracking id"""
+    this_files_dir = os.path.dirname(os.path.realpath(__file__))
+    azure_config_file = os.path.join(this_files_dir, "azure_config.json")
+    azure_secrets_config_file = os.path.join(
+        this_files_dir, "azure_config_secrets.json"
+    )
+    with open(azure_config_file, "r") as f:
+        azure_config_dict = json.load(fp=f)
+    with open(azure_secrets_config_file, "r") as f:
+        azure_secrets_config_dict = json.load(fp=f)
+    os.environ["AZURE_TENANT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_TENANT_ID"]
+    os.environ["AZURE_CLIENT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_CLIENT_ID"]
+    os.environ["AZURE_CLIENT_SECRET"] = azure_secrets_config_dict[
+        "SERVICE_PRINCIPAL_CLIENT_SECRET"
+    ]
+    environment_credential = EnvironmentCredential()
+
+    ml_client = MLClient(
+        subscription_id=azure_config_dict["AZURE_SUBSCRIPTION_ID"],
+        resource_group_name=azure_config_dict["RESOURCE_GROUP_NAME"],
+        credential=environment_credential,
+        workspace_name=azure_config_dict["WORKSPACE_NAME"],
+    )
+    mlflow_tracking_id = ml_client.workspaces.get(
+        ml_client.workspace_name
+    ).mlflow_tracking_uri
+    mlflow.set_tracking_uri(mlflow_tracking_id)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--train-data-folder")
@@ -200,32 +279,7 @@ if __name__ == "__main__":
     remote_tracking = args.remote_tracking
 
     if remote_tracking:
-        this_files_dir = os.path.dirname(os.path.realpath(__file__))
-        azure_config_file = os.path.join(this_files_dir, "azure_config.json")
-        azure_secrets_config_file = os.path.join(
-            this_files_dir, "azure_config_secrets.json"
-        )
-        with open(azure_config_file, "r") as f:
-            azure_config_dict = json.load(fp=f)
-        with open(azure_secrets_config_file, "r") as f:
-            azure_secrets_config_dict = json.load(fp=f)
-        os.environ["AZURE_TENANT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_TENANT_ID"]
-        os.environ["AZURE_CLIENT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_CLIENT_ID"]
-        os.environ["AZURE_CLIENT_SECRET"] = azure_secrets_config_dict[
-            "SERVICE_PRINCIPAL_CLIENT_SECRET"
-        ]
-        environment_credential = EnvironmentCredential()
-
-        ml_client = MLClient(
-            subscription_id=azure_config_dict["AZURE_SUBSCRIPTION_ID"],
-            resource_group_name=azure_config_dict["RESOURCE_GROUP_NAME"],
-            credential=environment_credential,
-            workspace_name=azure_config_dict["WORKSPACE_NAME"],
-        )
-        mlflow_tracking_id = ml_client.workspaces.get(
-            ml_client.workspace_name
-        ).mlflow_tracking_uri
-        mlflow.set_tracking_uri(mlflow_tracking_id)
+        configure_remote_tracking()
     mlflow.set_experiment("mtg-artist-classification")
     with mlflow.start_run():
         main(train_data_folder, val_data_folder, batch_size, num_epochs)

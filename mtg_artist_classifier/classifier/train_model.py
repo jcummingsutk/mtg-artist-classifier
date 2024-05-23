@@ -1,6 +1,5 @@
 import argparse
 import glob
-import json
 import os
 import time
 from tempfile import TemporaryDirectory
@@ -10,6 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import yaml
 from azure.ai.ml import MLClient
 from azure.identity import EnvironmentCredential
 from config_utils import create_artist_json, get_num_classes
@@ -231,29 +231,27 @@ def main(
     mlflow.pytorch.log_model(model, "model", code_paths=code_paths)
 
 
-def configure_remote_tracking():
+def configure_remote_tracking(config_file: str, config_secrets_file: str):
     """Sets up remote tracking environment variables, remote tracking id"""
-    this_files_dir = os.path.dirname(os.path.realpath(__file__))
-    azure_config_file = os.path.join(this_files_dir, "azure_config.json")
-    azure_secrets_config_file = os.path.join(
-        this_files_dir, "azure_config_secrets.json"
-    )
-    with open(azure_config_file, "r") as f:
-        azure_config_dict = json.load(fp=f)
-    with open(azure_secrets_config_file, "r") as f:
-        azure_secrets_config_dict = json.load(fp=f)
-    os.environ["AZURE_TENANT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_TENANT_ID"]
-    os.environ["AZURE_CLIENT_ID"] = azure_config_dict["SERVICE_PRINCIPAL_CLIENT_ID"]
+
+    with open(config_file, "r") as f:
+        config_dict = yaml.safe_load(f)
+        azure_config_dict = config_dict["azure_ml"]["dev"]
+    with open(config_secrets_file, "r") as f:
+        config_secrets_dict = yaml.safe_load(f)
+        azure_secrets_config_dict = config_secrets_dict["azure_ml"]["dev"]
+    os.environ["AZURE_TENANT_ID"] = azure_config_dict["service_principal_tenant_id"]
+    os.environ["AZURE_CLIENT_ID"] = azure_config_dict["service_principal_client_id"]
     os.environ["AZURE_CLIENT_SECRET"] = azure_secrets_config_dict[
-        "SERVICE_PRINCIPAL_CLIENT_SECRET"
+        "service_principal_client_secret"
     ]
     environment_credential = EnvironmentCredential()
 
     ml_client = MLClient(
-        subscription_id=azure_config_dict["AZURE_SUBSCRIPTION_ID"],
-        resource_group_name=azure_config_dict["RESOURCE_GROUP_NAME"],
+        subscription_id=azure_config_dict["azure_subscription_id"],
+        resource_group_name=azure_config_dict["resource_group_name"],
         credential=environment_credential,
-        workspace_name=azure_config_dict["WORKSPACE_NAME"],
+        workspace_name=azure_config_dict["workspace_name"],
     )
     mlflow_tracking_id = ml_client.workspaces.get(
         ml_client.workspace_name
@@ -279,7 +277,9 @@ if __name__ == "__main__":
     remote_tracking = args.remote_tracking
 
     if remote_tracking:
-        configure_remote_tracking()
+        config_file = "config.yaml"
+        config_secrets_file = "config_secret.yaml"
+        configure_remote_tracking(config_file, config_secrets_file)
     mlflow.set_experiment("mtg-artist-classification")
     with mlflow.start_run():
         main(train_data_folder, val_data_folder, batch_size, num_epochs)

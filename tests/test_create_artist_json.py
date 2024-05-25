@@ -25,3 +25,4 @@ def test_correct_artist_json_creation():
         output_dict = json.load(fp)
     expected_output_dict = {"0": "artist 1", "1": "artist 2"}
     assert output_dict == expected_output_dict
+    os.remove(output_json_file)

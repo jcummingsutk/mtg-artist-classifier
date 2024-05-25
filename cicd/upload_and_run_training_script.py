@@ -41,7 +41,6 @@ if __name__ == "__main__":
         os.environ["AZURE_CLIENT_SECRET"] = azure_secrets_config_dict[
             "service_principal_client_secret"
         ]
-        print(azure_secrets_config_dict)
 
     sp_auth = ServicePrincipalAuthentication(
         tenant_id=os.environ["AZURE_TENANT_ID"],
